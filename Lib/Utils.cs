@@ -23,11 +23,10 @@ public static class Utils {
         this IEnumerable<T> a, T b
     ) {
         int i = 0;
+        int acnt = a.TryGetNonEnumeratedCount(out int cnt) ? cnt : a.Count();
         foreach (T x in a) {
             yield return x;
-            // Buggy, duplicate elements could exist
-            //if (x.Equals(a.Last())) yield break;
-            if (i == a.Count() - 1) yield break;
+            if (i == acnt - 1) yield break;
             yield return b;
             i++;
         }
@@ -44,5 +43,21 @@ public static class Utils {
     ) {
         foreach (string ln in noNewLines ? list : list.Joined(NewLine)) 
             (tw ?? Out).Write(modifier != null ? modifier(ln) : ln);
+    }
+    
+    // Executes a function, treating a possible exception. The purposes are to 
+    // internalize the try/catch clause and to return a single consistent type 
+    // in either case.
+    // Unfortunately, it can only accept a single exception type.
+    
+    public static T Try<T, TEx>(Func<T> f, Func<TEx, T> fex) 
+        where TEx : Exception 
+    {
+        try {
+            return f();
+        }
+        catch (TEx ex) {
+            return fex(ex);
+        }
     }
 }

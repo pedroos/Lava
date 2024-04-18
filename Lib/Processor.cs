@@ -9,8 +9,7 @@ Processes like a processor, however at application data level.
   - This is like a "job" in Spark
 - A processor's processing methods take an instruction and a heap and 
   partitions the instruction's total input into a specified batch size and 
-  processes each batch atomically by calling the instruction's operation 
-  on the batch
+  processes each batch by calling the instruction's operation on the batch
   
 Summary:
 - Operation: knows about processing data
@@ -18,8 +17,7 @@ Summary:
 - Processor: knows about chunks of input and coordination
 
 Observations:
-- The idea is NOT that operations are low-level; they should be 
-  self-sufficient
+- The idea is NOT that operations are low-level; they should be self-sufficient
 */
 
 public static class Opers {
@@ -81,27 +79,26 @@ public static class Processor {
         if (r > 0) btches++;
         dbg?.WriteLine($"Perform {instr.Name} {{ {instr.Items.Join(", ")
             } }} with batch size {batchSize} ({btches} batches)");
-        for (int i = 0; i < btches; i++) {
+        
         // Chunk/partition the input
-            int rem = Math.Min(batchSize, instr.Items.Length - pos);
-            dbg?.WriteLine($"    rem is {rem}");
-            // Operate on the chunk
-            try {
+        return Try<bool, Exception>(() => {
+            for (int i = 0; i < btches; i++) {
+                int rem = Math.Min(batchSize, instr.Items.Length - pos);
+                dbg?.WriteLine($"    rem is {rem}");
+                // Operate on the chunk
                 dbg?.WriteLine($"        from {pos} to {pos + rem - 1}");
-
                 instr.Oper(heap, instr.Items[pos..(pos + rem)], dbg);
                 pos += rem;
                 btch++;
                 dbg?.WriteLine($"        pos is {pos}");
+                dbg?.WriteLine("Finished perform");
             }
-            catch (Exception ex) {
-                WriteLine($"ERROR: Instruction failed at batch {btch} of {
-                    btches}");
-                ex.RecurseExceptionMessages().WriteLines();
-                return false;
-            }
-        }
-        dbg?.WriteLine("Finished perform");
-        return true;
+            return true;
+        }, ex => {
+            WriteLine($"ERROR: Instruction failed at batch {btch} of {
+                btches}");
+            ex.RecurseExceptionMessages().WriteLines();
+            return false;
+        });
     }
 }
