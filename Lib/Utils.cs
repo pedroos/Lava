@@ -47,8 +47,7 @@ public static class Utils {
     
     // Executes a function, treating a possible exception. The purposes are to 
     // internalize the try/catch clause and to return a single consistent type 
-    // in either case.
-    // Unfortunately, it can only accept a single exception type.
+    // in all cases.
     
     public static T Try<T, TEx>(Func<T> f, Func<TEx, T> fex) 
         where TEx : Exception 
@@ -58,6 +57,20 @@ public static class Utils {
         }
         catch (TEx ex) {
             return fex(ex);
+        }
+    }
+    
+    public static T Try<T, TEx1, TEx2>(Func<T> f, Func<TEx1, T> fex1, 
+        Func<TEx2, T> fex2) where TEx1 : Exception where TEx2 : Exception
+    {
+        try {
+            return f();
+        }
+        catch (TEx1 ex) {
+            return fex1(ex);
+        }
+        catch (TEx2 ex) {
+            return fex2(ex);
         }
     }
 }
