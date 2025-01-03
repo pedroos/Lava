@@ -5,22 +5,32 @@ VisualStudioVersion = 17.9.34723.18
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lib", "Lib\Lib.csproj", "{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{939667A3-B063-4935-B9B7-92202FC28948}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Tests\Tests.csproj", "{939667A3-B063-4935-B9B7-92202FC28948}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
+		Debug|ARM64 = Debug|ARM64
 		Release|Any CPU = Release|Any CPU
+		Release|ARM64 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Debug|ARM64.Build.0 = Debug|Any CPU
 		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Release|ARM64.ActiveCfg = Release|ARM64
+		{999973D3-B4FB-4BC4-A8B6-5C3BCF57D42C}.Release|ARM64.Build.0 = Release|ARM64
 		{939667A3-B063-4935-B9B7-92202FC28948}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{939667A3-B063-4935-B9B7-92202FC28948}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{939667A3-B063-4935-B9B7-92202FC28948}.Debug|ARM64.ActiveCfg = Debug|Any CPU
+		{939667A3-B063-4935-B9B7-92202FC28948}.Debug|ARM64.Build.0 = Debug|Any CPU
 		{939667A3-B063-4935-B9B7-92202FC28948}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{939667A3-B063-4935-B9B7-92202FC28948}.Release|Any CPU.Build.0 = Release|Any CPU
+		{939667A3-B063-4935-B9B7-92202FC28948}.Release|ARM64.ActiveCfg = Release|ARM64
+		{939667A3-B063-4935-B9B7-92202FC28948}.Release|ARM64.Build.0 = Release|ARM64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

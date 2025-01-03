@@ -17,12 +17,12 @@ Summary:
 - Processor: knows about batches and coordination
 
 Observations:
-- The idea is NOT that operations are low-level; they should be self-sufficient
+- It is not intended that operations be low-level, but rather self-sufficient
 */
 
-// Base class for operation function calls
+// Interface for operation function calls
 
-public interface IOperFunc<T, TArg> {
+public interface IOperFunc<T, TArg> where T : unmanaged {
     static abstract string Name { get; }
     
     abstract TArg MakeArg(
@@ -38,10 +38,10 @@ public interface IOperFunc<T, TArg> {
         TextWriter? dbg
     );
 }
-    
+
 // Heap class
 
-public sealed class Heap<T> {
+public sealed class Heap<T> where T : unmanaged {
     public int Capacity { get; }
     int dataSize;
     public T[] Data { get => data; }
@@ -57,11 +57,10 @@ public sealed class Heap<T> {
     public bool GetProp(string name, out bool[]? vals) =>
         props.TryGetValue(name, out vals);
     
-    // Heap methods are called multiple times, each time with a different 
-    // chunk from a batch. 
-    // They trust any positional arguments are in-bounds.
+    // Heap methods are called multiple times, each time with a different
+    // batch. They trust any positional arguments are in-bounds.
     
-    // Appends the input array to the current data array
+    // Appends the input array to the data array
         
     public void Append(T[] input, TextWriter? dbg) {
         dbg?.WriteLine($"[Heap] Append with length {input.Length} at pos {
@@ -72,8 +71,9 @@ public sealed class Heap<T> {
             data[..dataSize].Join(", ")} }} of size {dataSize}");
     }
     
-    // Writes values for the evaluation of a property on a specific array.
-    // If it doesn't exist, the array is created at the first chunk.
+    // Writes or overwrites the result of evaluation of a predicate on a 
+    // property array. If it doesn't exist, the array is created at the 
+    // first chunk.
     
     public void SetOrAddProp(
         string name, 
@@ -91,13 +91,14 @@ public sealed class Heap<T> {
         else {
             props.Add(name, vals = new bool[Capacity]);
         }
-        dbg?.WriteLine($"        SetOrAddProp: from {pos} to {
-            pos + rem - 1}");
-        for (int i = pos; i <= pos + rem - 1; i++) {
+        int from = pos;
+        int to   = pos + rem - 1;
+        dbg?.WriteLine($"        SetOrAddProp: from {from} to {to}");
+        for (int i = from; i <= to; i++) {
             bool v = pred(data[i]);
             vals[i] = v;
+            dbg?.WriteLine($"        {i} '{data[i]}' evaluated to {v}");
         }
-        dbg?.WriteLine($"    Vals is {vals.Join(", ")}");
     }
 }
 
@@ -105,18 +106,21 @@ public sealed class Heap<T> {
 
 public static class Processor {
     public static bool Perform<TOper, T, TArg>(
-        // Holds instance values as arguments
+        // Contains state for the operator's argument
         TOper oper,
         T[]? items,
         Heap<T> heap, 
         int batchSize, 
         TextWriter? dbg
-    ) where TOper : IOperFunc<T, TArg> {
+    ) 
+        where TOper : IOperFunc<T, TArg> 
+        where T : unmanaged 
+    {
         // Processes in batches.
         
-        // If there is no input, the input is the heap.
-        // The output is always the heap -- it's up to the help to not 
-        // corrupt itself when it is both the input and the output.
+        // If there is no input, then the input is the heap.
+        // The output is always the heap -- it's up to the heap not to corrupt
+        // itself when it is both the input and the output.
         
         T[] data = items ?? heap.Data;
         
@@ -128,6 +132,7 @@ public static class Processor {
             throw new ArgumentException($"Count of data items received {
                 data.Length} greater than heap capacity {heap.Capacity
                 }", nameof(items));
+
         int btch = 1;
         var (q, r) = Math.DivRem(data.Length, batchSize);
         int fullBatches = q;
@@ -136,7 +141,9 @@ public static class Processor {
             } }} with batch size {batchSize}");
         dbg?.WriteLine($"    fullBatches is {fullBatches}");
         dbg?.WriteLine($"    r is {r}");
+
         // Chunk/partition the input
+
         return Try<bool, Exception>(() => {
             for (int i = 0; i < totalBatches; i++) {
                 int pos = (btch - 1) * batchSize;
@@ -146,12 +153,12 @@ public static class Processor {
                 dbg?.WriteLine($"    from {pos} to {pos + bsize - 1}");
                 oper.Do(
                     heap,
-                    // Retrieve custom arguments for each operation type, 
-                    // which are a function of the data and the batch/bsize, 
-                    // defined on the Operator.
-                    // If the function does NOT depend on the batch/bsize,
-                    // the arguments wouldn't change with each batch (but 
-                    // this is opaque to the Processor).
+                    // Retrieve an argument as a function on the Operator, 
+                    // passing in the data array and the batch and position
+                    // numbers.
+                    // If the function does not depend on the batch, the
+                    // calculated argument wouldn't actually change; however, 
+                    // this fact is opaque to the Processor.
                     arg: oper.MakeArg(data, btch, batchSize, pos, bsize),
                     dbg
                 );

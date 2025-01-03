@@ -2,7 +2,9 @@
     
 // Ingests unordered data at the tail of the heap
 
-public sealed class KeylessIngest<T> : IOperFunc<T, T[]> {
+public sealed class KeylessIngest<T> : IOperFunc<T, T[]> 
+    where T : unmanaged 
+{
     public static string Name { get; } = "KeylessIngest";
     
     public T[] MakeArg(
@@ -17,7 +19,9 @@ public sealed class KeylessIngest<T> : IOperFunc<T, T[]> {
 
 // Evaluates a predicate against data
     
-public sealed class Classify<T> : IOperFunc<T, Classify<T>.Arg> {
+public sealed class Classify<T> : IOperFunc<T, Classify<T>.Arg> 
+    where T : unmanaged 
+{
     public readonly record struct Arg(
         string Name, 
         int Pos, 
@@ -40,15 +44,13 @@ public sealed class Classify<T> : IOperFunc<T, Classify<T>.Arg> {
     
     public Arg MakeArg(
         T[] data, int batch, int batchSize, int pos, int rem
-    ) {
-        Arg arg = new(
+    ) => 
+        new(
             Name: InstanceName,
             Pos: pos,
             Rem: rem,
             Pred: Predicate
         );
-        return arg;
-    }
     
     public void Do(Heap<T> heap, Arg arg, TextWriter? dbg) {
         heap.SetOrAddProp(arg.Name, arg.Pos, arg.Rem, arg.Pred, dbg);
